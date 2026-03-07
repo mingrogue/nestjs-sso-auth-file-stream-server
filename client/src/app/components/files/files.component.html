@@ -1,0 +1,81 @@
+<div class="files-container">
+  <header class="header">
+    <h1>My Files</h1>
+    <div class="header-actions">
+      <button class="upload-btn" (click)="openUploadModal()">
+        <span>+ Upload File</span>
+      </button>
+      <div class="user-info" *ngIf="user">
+        <img *ngIf="user.picture" [src]="user.picture" alt="Profile" class="avatar">
+        <span>{{ user.username }}</span>
+        <button class="logout-btn" (click)="logout()">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="content">
+    <div *ngIf="loading" class="loading">
+      <div class="spinner"></div>
+      <p>Loading files...</p>
+    </div>
+
+    <div *ngIf="error" class="error">
+      <p>{{ error }}</p>
+      <button (click)="loadFiles()">Retry</button>
+    </div>
+
+    <div *ngIf="!loading && !error && files.length === 0" class="empty">
+      <p>No files yet. Click "Upload File" to add your first file.</p>
+    </div>
+
+    <div class="files-grid" *ngIf="!loading && files.length > 0">
+      <div class="file-card" *ngFor="let file of files" (click)="playFile(file)">
+        <button class="delete-btn" (click)="deleteFile(file, $event)" title="Delete file">×</button>
+        <div class="file-icon">{{ getFileIcon(file.mimeType) }}</div>
+        <div class="file-info">
+          <h3>{{ file.originalName }}</h3>
+          <p class="file-size">{{ file.sizeFormatted }}</p>
+          <p class="file-downloads" *ngIf="file.downloadCount > 0">{{ file.downloadCount }} downloads</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Upload Modal -->
+<div class="modal-overlay" *ngIf="showUploadModal" (click)="closeUploadModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Upload File</h2>
+      <button class="close-btn" (click)="closeUploadModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="file-drop-zone" (click)="fileInput.click()">
+        <input #fileInput type="file" (change)="onFileSelected($event)" hidden>
+        <div *ngIf="!selectedFile">
+          <p class="drop-icon">📁</p>
+          <p>Click to select a file</p>
+        </div>
+        <div *ngIf="selectedFile">
+          <p class="selected-file">{{ selectedFile.name }}</p>
+          <p class="selected-size">{{ (selectedFile.size / 1024 / 1024).toFixed(2) }} MB</p>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Description (optional)</label>
+        <input type="text" [(ngModel)]="description" placeholder="Enter a description...">
+      </div>
+      <div class="form-group">
+        <label>Tags (optional, comma-separated)</label>
+        <input type="text" [(ngModel)]="tags" placeholder="e.g., video, tutorial, music">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="cancel-btn" (click)="closeUploadModal()">Cancel</button>
+      <button class="submit-btn" (click)="uploadFile()" [disabled]="!selectedFile || uploading">
+        <span *ngIf="!uploading">Upload</span>
+        <span *ngIf="uploading">Uploading...</span>
+      </button>
+    </div>
+  </div>
+</div>
