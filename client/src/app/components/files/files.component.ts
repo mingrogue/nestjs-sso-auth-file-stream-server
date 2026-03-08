@@ -12,8 +12,11 @@ export class FilesComponent implements OnInit {
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
   
   files: FileInfo[] = [];
+  filteredFiles: FileInfo[] = [];
+  myFiles: FileInfo[] = [];
   user: User | null = null;
   loading = true;
+  loadingMyFiles = true;
   uploading = false;
   error = '';
   uploadProgress = 0;
@@ -22,6 +25,8 @@ export class FilesComponent implements OnInit {
   description = '';
   tags = '';
   privacyType: string = 'public';
+  sidebarCollapsed = false;
+  searchQuery = '';
 
   constructor(
     private streamingService: StreamingService,
@@ -32,6 +37,7 @@ export class FilesComponent implements OnInit {
   ngOnInit(): void {
     this.authService.currentUser$.subscribe(user => this.user = user);
     this.loadFiles();
+    this.loadMyFiles();
   }
 
   loadFiles(): void {
@@ -39,6 +45,7 @@ export class FilesComponent implements OnInit {
     this.streamingService.getFiles().subscribe({
       next: (response) => {
         this.files = response.files;
+        this.filterFiles();
         this.loading = false;
       },
       error: (err) => {
@@ -46,6 +53,43 @@ export class FilesComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  filterFiles(): void {
+    if (!this.searchQuery.trim()) {
+      this.filteredFiles = this.files;
+      return;
+    }
+    const query = this.searchQuery.toLowerCase().trim();
+    this.filteredFiles = this.files.filter(file =>
+      file.tags?.some(tag => tag.toLowerCase().includes(query))
+    );
+  }
+
+  onSearchChange(): void {
+    this.filterFiles();
+  }
+
+  clearSearch(): void {
+    this.searchQuery = '';
+    this.filterFiles();
+  }
+
+  loadMyFiles(): void {
+    this.loadingMyFiles = true;
+    this.streamingService.getMyFiles().subscribe({
+      next: (response) => {
+        this.myFiles = response.files;
+        this.loadingMyFiles = false;
+      },
+      error: (err) => {
+        this.loadingMyFiles = false;
+      }
+    });
+  }
+
+  toggleSidebar(): void {
+    this.sidebarCollapsed = !this.sidebarCollapsed;
   }
 
   openUploadModal(): void {
@@ -78,6 +122,7 @@ export class FilesComponent implements OnInit {
         this.uploading = false;
         this.closeUploadModal();
         this.loadFiles();
+        this.loadMyFiles();
       },
       error: (err) => {
         this.uploading = false;
@@ -90,7 +135,10 @@ export class FilesComponent implements OnInit {
     event.stopPropagation();
     if (confirm(`Are you sure you want to delete "${file.originalName}"?`)) {
       this.streamingService.deleteFile(file.id).subscribe({
-        next: () => this.loadFiles(),
+        next: () => {
+          this.loadFiles();
+          this.loadMyFiles();
+        },
         error: () => this.error = 'Failed to delete file'
       });
     }

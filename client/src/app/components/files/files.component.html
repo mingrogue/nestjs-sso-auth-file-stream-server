@@ -1,6 +1,24 @@
 <div class="files-container">
   <header class="header">
-    <h1>My Files</h1>
+    <h1>All Files</h1>
+    
+    <!-- Search Bar - Centered -->
+    <div class="search-container">
+      <div class="search-input-wrapper">
+        <span class="search-icon">🔍</span>
+        <input 
+          type="text" 
+          class="search-input" 
+          [(ngModel)]="searchQuery" 
+          (input)="onSearchChange()" 
+          placeholder="Search by tags...">
+        <button *ngIf="searchQuery" class="clear-search" (click)="clearSearch()">×</button>
+      </div>
+      <span class="search-results" *ngIf="searchQuery">
+        {{ filteredFiles.length }} result{{ filteredFiles.length !== 1 ? 's' : '' }}
+      </span>
+    </div>
+
     <div class="header-actions">
       <button class="upload-btn" (click)="openUploadModal()">
         <span>+ Upload File</span>
@@ -13,32 +31,75 @@
     </div>
   </header>
 
-  <div class="content">
-    <div *ngIf="loading" class="loading">
-      <div class="spinner"></div>
-      <p>Loading files...</p>
-    </div>
-
-    <div *ngIf="error" class="error">
-      <p>{{ error }}</p>
-      <button (click)="loadFiles()">Retry</button>
-    </div>
-
-    <div *ngIf="!loading && !error && files.length === 0" class="empty">
-      <p>No files yet. Click "Upload File" to add your first file.</p>
-    </div>
-
-    <div class="files-grid" *ngIf="!loading && files.length > 0">
-      <div class="file-card" *ngFor="let file of files" (click)="playFile(file)">
-        <button class="delete-btn" (click)="deleteFile(file, $event)" title="Delete file">×</button>
-        <div class="file-icon" *ngIf="!isImage(file.mimeType)">{{ getFileIcon(file.mimeType) }}</div>
-        <div class="file-thumbnail" *ngIf="isImage(file.mimeType)">
-          <img [src]="getImageUrl(file)" [alt]="file.originalName" loading="lazy">
+  <div class="main-layout">
+    <!-- Side Panel - My Files -->
+    <aside class="sidebar" [class.collapsed]="sidebarCollapsed">
+      <div class="sidebar-header">
+        <h2>My Files</h2>
+        <button class="toggle-btn" (click)="toggleSidebar()">
+          {{ sidebarCollapsed ? '→' : '←' }}
+        </button>
+      </div>
+      <div class="sidebar-content" *ngIf="!sidebarCollapsed">
+        <div *ngIf="loadingMyFiles" class="sidebar-loading">
+          <div class="spinner-small"></div>
         </div>
-        <div class="file-info">
-          <h3>{{ file.originalName }}</h3>
-          <p class="file-size">{{ file.sizeFormatted }}</p>
-          <p class="file-downloads" *ngIf="file.downloadCount > 0">{{ file.downloadCount }} views</p>
+        <div *ngIf="!loadingMyFiles && myFiles.length === 0" class="sidebar-empty">
+          <p>No files uploaded yet</p>
+        </div>
+        <div class="my-files-list" *ngIf="!loadingMyFiles && myFiles.length > 0">
+          <div class="my-file-item" *ngFor="let file of myFiles" (click)="playFile(file)">
+            <div class="my-file-icon" *ngIf="!isImage(file.mimeType)">{{ getFileIcon(file.mimeType) }}</div>
+            <div class="my-file-thumb" *ngIf="isImage(file.mimeType)">
+              <img [src]="getImageUrl(file)" [alt]="file.originalName" loading="lazy">
+            </div>
+            <div class="my-file-details">
+              <span class="my-file-name">{{ file.originalName }}</span>
+              <span class="my-file-size">{{ file.sizeFormatted }}</span>
+            </div>
+            <button class="my-file-delete" (click)="deleteFile(file, $event)" title="Delete">×</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content - All Files -->
+    <div class="content">
+      
+
+      <div *ngIf="loading" class="loading">
+        <div class="spinner"></div>
+        <p>Loading files...</p>
+      </div>
+
+      <div *ngIf="error" class="error">
+        <p>{{ error }}</p>
+        <button (click)="loadFiles()">Retry</button>
+      </div>
+
+      <div *ngIf="!loading && !error && files.length === 0" class="empty">
+        <p>No files yet. Click "Upload File" to add your first file.</p>
+      </div>
+
+      <div *ngIf="!loading && files.length > 0 && filteredFiles.length === 0 && searchQuery" class="empty">
+        <p>No files found matching "{{ searchQuery }}"</p>
+      </div>
+
+      <div class="files-grid" *ngIf="!loading && filteredFiles.length > 0">
+        <div class="file-card" *ngFor="let file of filteredFiles" (click)="playFile(file)">
+          <button class="delete-btn" (click)="deleteFile(file, $event)" title="Delete file">×</button>
+          <div class="file-icon" *ngIf="!isImage(file.mimeType)">{{ getFileIcon(file.mimeType) }}</div>
+          <div class="file-thumbnail" *ngIf="isImage(file.mimeType)">
+            <img [src]="getImageUrl(file)" [alt]="file.originalName" loading="lazy">
+          </div>
+          <div class="file-info">
+            <h3>{{ file.originalName }}</h3>
+            <p class="file-size">{{ file.sizeFormatted }}</p>
+            <p class="file-downloads" *ngIf="file.downloadCount > 0">{{ file.downloadCount }} views</p>
+            <div class="file-tags" *ngIf="file.tags && file.tags.length > 0">
+              <span class="tag" *ngFor="let tag of file.tags">{{ tag }}</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
