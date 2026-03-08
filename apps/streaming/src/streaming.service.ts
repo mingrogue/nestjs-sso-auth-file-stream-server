@@ -124,6 +124,7 @@ export class StreamingService implements OnModuleInit {
   async uploadFile(
     file: Express.Multer.File,
     userId: string,
+    isPublic: boolean,
     description?: string,
     tags?: string[],
   ): Promise<FileInfo> {
@@ -147,6 +148,7 @@ export class StreamingService implements OnModuleInit {
       uploadedBy: new Types.ObjectId(userId),
       description,
       tags: tags || [],
+      isPublic,
     });
 
     await fileMetadata.save();
@@ -180,22 +182,22 @@ export class StreamingService implements OnModuleInit {
     return this.fileModel.findById(fileId);
   }
 
-  async listFilesByUser(userId: string): Promise<FileInfo[]> {
+  async listFilesByUser(loggedInUserId: string): Promise<FileInfo[]> {
     const files = await this.fileModel
-      .find({ uploadedBy: new Types.ObjectId(userId) })
+      .find({ uploadedBy: loggedInUserId })
       .sort({ createdAt: -1 })
       .exec();
 
     return files.map((file) => this.toFileInfo(file));
   }
 
-  async listAllFiles(): Promise<FileInfo[]> {
+  async listAllFiles(loggedInUserId: string): Promise<FileInfo[]> {
     const files = await this.fileModel
       .find()
       .sort({ createdAt: -1 })
       .exec();
 
-    return files.map((file) => this.toFileInfo(file));
+    return files.filter(file => !(file.uploadedBy.toString() === loggedInUserId) && file.isPublic).map((file) => this.toFileInfo(file));
   }
 
   async incrementDownloadCount(fileId: string): Promise<void> {
@@ -402,10 +404,8 @@ export class StreamingService implements OnModuleInit {
       );
     }
 
-    // Limit chunk size
-    if (end - start + 1 > this.maxChunkSize) {
-      end = start + this.maxChunkSize - 1;
-    }
+    // Note: Don't limit chunk size - browsers handle their own chunking
+    // and expect the exact range they requested. Limiting causes seek issues.
 
     return { start, end };
   }
@@ -426,8 +426,8 @@ export class StreamingService implements OnModuleInit {
     return this.toFileInfo(file);
   }
 
-  async listFiles(): Promise<FileInfo[]> {
-    return this.listAllFiles();
+  async listFiles(loggedInUserId: string): Promise<FileInfo[]> {
+    return this.listAllFiles(loggedInUserId);
   }
 
   async streamFileById(

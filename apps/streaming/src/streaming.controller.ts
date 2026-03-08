@@ -23,7 +23,7 @@ import { Multer } from 'multer';
 import { StreamingService } from './streaming.service';
 import { JwtAuthGuard, CurrentUser } from '@app/common';
 import type { IUser } from '@app/common';
-import { IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 class UploadFileDto {
   @IsOptional()
@@ -33,6 +33,10 @@ class UploadFileDto {
   @IsOptional()
   @IsString()
   tags?: string;
+
+  @IsNotEmpty()
+  @IsString()
+  isPublic: string;
 }
 
 @Controller('stream')
@@ -54,7 +58,7 @@ export class StreamingController {
   async listFiles(@CurrentUser() user: IUser) {
     return {
       user: { id: user.id, username: user.username },
-      files: await this.streamingService.listFiles(),
+      files: await this.streamingService.listFiles(user.id),
     };
   }
 
@@ -93,6 +97,7 @@ export class StreamingController {
     const uploadedFile = await this.streamingService.uploadFile(
       file,
       user.id,
+      body.isPublic === 'true' ? true : false,
       body.description,
       tags,
     );
@@ -156,7 +161,7 @@ export class StreamingController {
 
   @UseGuards(JwtAuthGuard)
   @Get(':filename')
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(206)
   async streamFile(
     @Param('filename') filename: string,
     @Headers('range') range: string | undefined,

@@ -10,10 +10,14 @@ import { JwtStrategy } from '@app/common';
 import { GoogleStrategy } from '../strategies/google.strategy';
 import { GitHubStrategy } from '../strategies/github.strategy';
 import { User, UserSchema } from '../schemas/user.schema';
+import { RefreshToken, RefreshTokenSchema } from '../schemas/refresh-token.schema';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    MongooseModule.forFeature([
+      { name: User.name, schema: UserSchema },
+      { name: RefreshToken.name, schema: RefreshTokenSchema },
+    ]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],

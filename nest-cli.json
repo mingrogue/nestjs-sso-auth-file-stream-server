@@ -25,7 +25,8 @@
       "entryFile": "main",
       "sourceRoot": "apps/sso-auth/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/sso-auth/tsconfig.app.json"
+        "tsConfigPath": "apps/sso-auth/tsconfig.app.json",
+        "webpack": false
       }
     },
     "streaming": {
@@ -34,7 +35,8 @@
       "entryFile": "main",
       "sourceRoot": "apps/streaming/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/streaming/tsconfig.app.json"
+        "tsConfigPath": "apps/streaming/tsconfig.app.json",
+        "webpack": false
       }
     }
   }

@@ -20,9 +20,9 @@ export class FileMetadata {
   @Prop({ required: true })
   storagePath: string;
 
-  @Prop({ required: true, type: Types.ObjectId, ref: 'User' })
-  uploadedBy: Types.ObjectId;
-
+  // @Prop({ required: true, type: Types.ObjectId, ref: 'User' })
+  @Prop({ required: true })
+  uploadedBy: string;
   @Prop()
   description?: string;
 

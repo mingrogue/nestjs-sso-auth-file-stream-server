@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Req, Res, Headers } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Req, Res, Headers } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard, CurrentUser } from '@app/common';
@@ -25,7 +25,7 @@ export class AuthController {
   async googleAuthCallback(@Req() req: Request, @Res() res: Response) {
     const result = await this.authService.validateOAuthLogin(req.user as any);
     const frontendUrl = this.configService.get<string>('FRONTEND_URL') || 'http://localhost:3000';
-    res.redirect(`${frontendUrl}/auth/callback?token=${result.accessToken}`);
+    res.redirect(`${frontendUrl}/auth/callback?token=${result.accessToken}&refreshToken=${result.refreshToken}`);
   }
 
   // GitHub OAuth
@@ -40,7 +40,7 @@ export class AuthController {
   async githubAuthCallback(@Req() req: Request, @Res() res: Response) {
     const result = await this.authService.validateOAuthLogin(req.user as any);
     const frontendUrl = this.configService.get<string>('FRONTEND_URL') || 'http://localhost:3000';
-    res.redirect(`${frontendUrl}/auth/callback?token=${result.accessToken}`);
+    res.redirect(`${frontendUrl}/auth/callback?token=${result.accessToken}&refreshToken=${result.refreshToken}`);
   }
 
   // Token validation
@@ -55,6 +55,19 @@ export class AuthController {
   @Get('profile')
   async getProfile(@CurrentUser() user: IUser) {
     return user;
+  }
+
+  // Refresh token endpoint
+  @Post('refresh')
+  async refreshToken(@Body('refreshToken') refreshToken: string) {
+    return this.authService.refreshAccessToken(refreshToken);
+  }
+
+  // Logout - revoke refresh token
+  @Post('logout')
+  async logout(@Body('refreshToken') refreshToken: string) {
+    await this.authService.revokeRefreshToken(refreshToken);
+    return { message: 'Logged out successfully' };
   }
 
   // Available providers info

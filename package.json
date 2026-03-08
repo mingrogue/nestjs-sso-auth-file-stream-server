@@ -2,7 +2,7 @@
   "name": "nestjs-sso-streaming",
   "version": "0.0.1",
   "description": "",
-  "author": "",
+  "author": "Arnab Das",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
@@ -17,6 +17,8 @@
     "start:sso-auth:dev": "nest start sso-auth --watch",
     "start:streaming": "nest start streaming",
     "start:streaming:dev": "nest start streaming --watch",
+    "start:streaming:debug": "nest start streaming --debug --watch",
+    "start:sso-auth:debug": "nest start sso-auth --debug --watch",
     "start:all": "concurrently \"npm run start:sso-auth:dev\" \"npm run start:streaming:dev\"",
     "start:prod:sso-auth": "node dist/apps/sso-auth/main",
     "start:prod:streaming": "node dist/apps/streaming/main",
