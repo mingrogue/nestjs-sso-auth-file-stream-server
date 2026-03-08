@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { StreamingService, FileInfo } from '../../services/streaming.service';
-import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-video-player',
@@ -13,12 +13,14 @@ export class VideoPlayerComponent implements OnInit {
   fileInfo: FileInfo | null = null;
   streamUrl = '';
   loading = true;
+  textContent = '';
+  textLoading = false;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private streamingService: StreamingService,
-    private authService: AuthService
+    private http: HttpClient,
+    private streamingService: StreamingService
   ) {}
 
   ngOnInit(): void {
@@ -34,6 +36,10 @@ export class VideoPlayerComponent implements OnInit {
         this.fileInfo = response.file;
         this.streamUrl = this.streamingService.getStreamUrl(this.fileId);
         this.loading = false;
+        
+        if (this.isTextFile) {
+          this.loadTextContent();
+        }
       },
       error: () => {
         this.router.navigate(['/files']);
@@ -41,11 +47,27 @@ export class VideoPlayerComponent implements OnInit {
     });
   }
 
-  get token(): string {
-    return this.authService.token || '';
-  }
-
   goBack(): void {
     this.router.navigate(['/files']);
+  }
+
+  get isTextFile(): boolean {
+    return this.fileInfo?.mimeType.startsWith('application/json') 
+    || this.fileInfo?.mimeType.startsWith('application/text') 
+    || false;
+  }
+
+  loadTextContent(): void {
+    this.textLoading = true;
+    this.http.get(this.streamUrl, { responseType: 'text' }).subscribe({
+      next: (content) => {
+        this.textContent = content;
+        this.textLoading = false;
+      },
+      error: () => {
+        this.textContent = 'Failed to load text content.';
+        this.textLoading = false;
+      }
+    });
   }
 }

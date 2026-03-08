@@ -31,11 +31,14 @@
     <div class="files-grid" *ngIf="!loading && files.length > 0">
       <div class="file-card" *ngFor="let file of files" (click)="playFile(file)">
         <button class="delete-btn" (click)="deleteFile(file, $event)" title="Delete file">×</button>
-        <div class="file-icon">{{ getFileIcon(file.mimeType) }}</div>
+        <div class="file-icon" *ngIf="!isImage(file.mimeType)">{{ getFileIcon(file.mimeType) }}</div>
+        <div class="file-thumbnail" *ngIf="isImage(file.mimeType)">
+          <img [src]="getImageUrl(file)" [alt]="file.originalName" loading="lazy">
+        </div>
         <div class="file-info">
           <h3>{{ file.originalName }}</h3>
           <p class="file-size">{{ file.sizeFormatted }}</p>
-          <p class="file-downloads" *ngIf="file.downloadCount > 0">{{ file.downloadCount }} downloads</p>
+          <p class="file-downloads" *ngIf="file.downloadCount > 0">{{ file.downloadCount }} views</p>
         </div>
       </div>
     </div>
@@ -68,6 +71,13 @@
       <div class="form-group">
         <label>Tags (optional, comma-separated)</label>
         <input type="text" [(ngModel)]="tags" placeholder="e.g., video, tutorial, music">
+      </div>
+      <div class="form-group">
+        <label>Privacy Type</label>
+        <select [(ngModel)]="privacyType">
+          <option value="public">Public</option>
+          <option value="private">Private</option>
+        </select>
       </div>
     </div>
     <div class="modal-footer">

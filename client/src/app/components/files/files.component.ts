@@ -21,6 +21,7 @@ export class FilesComponent implements OnInit {
   selectedFile: File | null = null;
   description = '';
   tags = '';
+  privacyType: string = 'public';
 
   constructor(
     private streamingService: StreamingService,
@@ -72,7 +73,7 @@ export class FilesComponent implements OnInit {
     this.uploading = true;
     const tagsArray = this.tags ? this.tags.split(',').map(t => t.trim()).filter(t => t) : [];
 
-    this.streamingService.uploadFile(this.selectedFile, this.description, tagsArray).subscribe({
+    this.streamingService.uploadFile(this.selectedFile, this.description, tagsArray, this.privacyType).subscribe({
       next: (response) => {
         this.uploading = false;
         this.closeUploadModal();
@@ -105,6 +106,14 @@ export class FilesComponent implements OnInit {
     if (mimeType.startsWith('image/')) return '🖼️';
     if (mimeType === 'application/pdf') return '📄';
     return '📁';
+  }
+
+  isImage(mimeType: string): boolean {
+    return mimeType.startsWith('image/');
+  }
+
+  getImageUrl(file: FileInfo): string {
+    return this.streamingService.getStreamUrl(file.id);
   }
 
   logout(): void {

@@ -17,8 +17,9 @@ export class AuthCallbackComponent implements OnInit {
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
       const token = params['token'];
+      const refreshToken = params['refreshToken'];
       if (token) {
-        this.authService.handleCallback(token);
+        this.authService.handleCallback(token, refreshToken);
         this.router.navigate(['/files']);
       } else {
         this.router.navigate(['/login']);

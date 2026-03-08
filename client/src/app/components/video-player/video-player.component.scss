@@ -1,0 +1,23 @@
+.text-viewer {
+  background: #1e1e1e;
+  border-radius: 8px;
+  padding: 1.5rem;
+  max-height: 70vh;
+  overflow: auto;
+
+  pre {
+    margin: 0;
+    font-family: 'Fira Code', 'Consolas', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #d4d4d4;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  .text-loading {
+    color: #888;
+    text-align: center;
+    padding: 2rem;
+  }
+}

@@ -14,7 +14,7 @@
       *ngIf="fileInfo.mimeType.startsWith('video')"
       controls 
       autoplay
-      [src]="streamUrl + '?token=' + token">
+      [src]="streamUrl">
       Your browser does not support the video tag.
     </video>
     
@@ -22,13 +22,28 @@
       *ngIf="fileInfo.mimeType.startsWith('audio')"
       controls 
       autoplay
-      [src]="streamUrl + '?token=' + token">
+      [src]="streamUrl">
       Your browser does not support the audio tag.
     </audio>
 
-    <div *ngIf="!fileInfo.mimeType.startsWith('video') && !fileInfo.mimeType.startsWith('audio')" class="download-prompt">
+    <img 
+      *ngIf="fileInfo.mimeType.startsWith('image')"
+      [src]="streamUrl"
+      alt="Image"
+    />
+
+    <div *ngIf="isTextFile" class="text-viewer">
+      <div *ngIf="textLoading" class="text-loading">Loading text...</div>
+      <pre *ngIf="!textLoading">{{ textContent }}</pre>
+    </div>
+
+    <div *ngIf="!fileInfo.mimeType.startsWith('video') 
+      && !fileInfo.mimeType.startsWith('audio')
+      && !fileInfo.mimeType.startsWith('image')
+      && !isTextFile
+    " class="download-prompt">
       <p>This file type cannot be streamed.</p>
-      <a [href]="streamUrl + '?token=' + token" download>Download File</a>
+      <a [href]="streamUrl" download>Download File</a>
     </div>
   </div>
 

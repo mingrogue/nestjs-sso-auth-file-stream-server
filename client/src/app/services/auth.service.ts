@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, tap, catchError, switchMap, of, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 export interface User {
@@ -16,19 +16,31 @@ export interface AuthResponse {
   user: User;
 }
 
+export interface RefreshResponse {
+  accessToken: string;
+  tokenType: string;
+  user: User;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
+  private isRefreshing = false;
 
   constructor(private http: HttpClient) {
-    this.loadUserFromToken();
+    // Defer to avoid circular dependency with AuthInterceptor
+    setTimeout(() => this.loadUserFromToken(), 0);
   }
 
   get token(): string | null {
     return localStorage.getItem('access_token');
+  }
+
+  get refreshToken(): string | null {
+    return localStorage.getItem('refresh_token');
   }
 
   get isAuthenticated(): boolean {
@@ -47,13 +59,21 @@ export class AuthService {
     window.location.href = `${environment.ssoAuthUrl}/auth/github`;
   }
 
-  handleCallback(token: string): void {
+  handleCallback(token: string, refreshToken?: string): void {
     localStorage.setItem('access_token', token);
+    if (refreshToken) {
+      localStorage.setItem('refresh_token', refreshToken);
+    }
     this.loadUserFromToken();
   }
 
   logout(): void {
+    const refreshToken = this.refreshToken;
+    if (refreshToken) {
+      this.http.post(`${environment.ssoAuthUrl}/auth/logout`, { refreshToken }).subscribe();
+    }
     localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
     this.currentUserSubject.next(null);
   }
 
@@ -67,11 +87,41 @@ export class AuthService {
     );
   }
 
+  refreshAccessToken(): Observable<RefreshResponse> {
+    const refreshToken = this.refreshToken;
+    if (!refreshToken) {
+      return throwError(() => new Error('No refresh token available'));
+    }
+
+    return this.http.post<RefreshResponse>(`${environment.ssoAuthUrl}/auth/refresh`, { refreshToken }).pipe(
+      tap(response => {
+        localStorage.setItem('access_token', response.accessToken);
+        this.currentUserSubject.next(response.user);
+      })
+    );
+  }
+
   private loadUserFromToken(): void {
-    if (this.token) {
+    const token = this.token;
+    const refreshToken = this.refreshToken;
+    console.log('[AuthService] loadUserFromToken called');
+    console.log('[AuthService] access_token exists:', !!token);
+    console.log('[AuthService] refresh_token exists:', !!refreshToken);
+    
+    if (token) {
+      // The interceptor handles 401 and token refresh automatically
+      // Just call validateToken and let the interceptor handle refresh if needed
       this.validateToken().subscribe({
-        next: () => {},
-        error: () => this.logout()
+        next: (response) => {
+          console.log('[AuthService] validateToken success:', response);
+          if (response.valid && response.user) {
+            this.currentUserSubject.next(response.user);
+          }
+        },
+        error: (err) => {
+          console.error('[AuthService] validateToken failed:', err);
+          // Don't logout here - the interceptor handles 401 and redirects if needed
+        }
       });
     }
   }

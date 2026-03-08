@@ -52,7 +52,7 @@ export class StreamingService {
     return this.http.get<{ user: any; file: FileInfo }>(`${environment.streamingUrl}/stream/info/${fileId}`);
   }
 
-  uploadFile(file: File, description?: string, tags?: string[]): Observable<UploadResponse> {
+  uploadFile(file: File, description?: string, tags?: string[], privacyType?: string): Observable<UploadResponse> {
     const formData = new FormData();
     formData.append('file', file);
     if (description) {
@@ -60,6 +60,9 @@ export class StreamingService {
     }
     if (tags && tags.length > 0) {
       formData.append('tags', tags.join(','));
+    }
+    if (privacyType) {
+      formData.append('isPublic', privacyType === 'public' ? 'true' : 'false');
     }
     return this.http.post<UploadResponse>(`${environment.streamingUrl}/stream/upload`, formData);
   }
