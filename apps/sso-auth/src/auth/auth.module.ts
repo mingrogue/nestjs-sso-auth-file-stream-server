@@ -9,6 +9,7 @@ import { UsersService } from '../users/users.service';
 import { JwtStrategy } from '@app/common';
 import { GoogleStrategy } from '../strategies/google.strategy';
 import { GitHubStrategy } from '../strategies/github.strategy';
+import { LocalStrategy } from '../strategies/local.strategy';
 import { User, UserSchema } from '../schemas/user.schema';
 import { RefreshToken, RefreshTokenSchema } from '../schemas/refresh-token.schema';
 
@@ -31,7 +32,7 @@ import { RefreshToken, RefreshTokenSchema } from '../schemas/refresh-token.schem
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, UsersService, JwtStrategy, GoogleStrategy, GitHubStrategy],
+  providers: [AuthService, UsersService, JwtStrategy, GoogleStrategy, GitHubStrategy, LocalStrategy],
   exports: [AuthService],
 })
 export class AuthModule {}

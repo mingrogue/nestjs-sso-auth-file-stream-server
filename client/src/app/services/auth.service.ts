@@ -22,6 +22,25 @@ export interface RefreshResponse {
   user: User;
 }
 
+export interface LoginResponse {
+  accessToken: string;
+  refreshToken: string;
+  tokenType: string;
+  expiresIn: number;
+  user: User;
+}
+
+export interface RegisterRequest {
+  email: string;
+  username: string;
+  password: string;
+}
+
+export interface LoginRequest {
+  username: string;
+  password: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -57,6 +76,26 @@ export class AuthService {
 
   loginWithGithub(): void {
     window.location.href = `${environment.ssoAuthUrl}/auth/github`;
+  }
+
+  login(credentials: LoginRequest): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${environment.ssoAuthUrl}/auth/login`, credentials).pipe(
+      tap(response => {
+        localStorage.setItem('access_token', response.accessToken);
+        localStorage.setItem('refresh_token', response.refreshToken);
+        this.currentUserSubject.next(response.user);
+      })
+    );
+  }
+
+  register(data: RegisterRequest): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${environment.ssoAuthUrl}/auth/register`, data).pipe(
+      tap(response => {
+        localStorage.setItem('access_token', response.accessToken);
+        localStorage.setItem('refresh_token', response.refreshToken);
+        this.currentUserSubject.next(response.user);
+      })
+    );
   }
 
   handleCallback(token: string, refreshToken?: string): void {

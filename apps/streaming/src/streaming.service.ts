@@ -16,6 +16,12 @@ import { createHash, randomUUID } from 'crypto';
 import { Response } from 'express';
 import { FileMetadata, FileDocument } from './schemas/file.schema';
 
+export interface FileUser {
+  id: string;
+  name: string;
+  email: string;
+}
+
 export interface FileInfo {
   id: string;
   filename: string;
@@ -28,6 +34,7 @@ export interface FileInfo {
   description?: string;
   tags: string[];
   uploadedBy: string;
+  user?: FileUser;
   downloadCount: number;
   createdAt: Date;
   modifiedAt: Date;
@@ -192,12 +199,53 @@ export class StreamingService implements OnModuleInit {
   }
 
   async listAllFiles(loggedInUserId: string): Promise<FileInfo[]> {
-    const files = await this.fileModel
-      .find()
-      .sort({ createdAt: -1 })
-      .exec();
+    const files = await this.fileModel.aggregate([
+      {
+        $match: {
+          uploadedBy: { $ne: loggedInUserId },
+          isPublic: true
+        }
+      },
+      {
+        $addFields: {
+          uploadedByObjectId: { $toObjectId: '$uploadedBy' }
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'uploadedByObjectId',
+          foreignField: '_id',
+          as: 'uploader'
+        }
+      },
+      {
+        $unwind: {
+          path: '$uploader',
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      {
+        $addFields: {
+          user: {
+            id: '$uploader._id',
+            name: '$uploader.username',
+            email: '$uploader.email'
+          }
+        }
+      },
+      {
+        $project: {
+          uploader: 0,
+          uploadedByObjectId: 0
+        }
+      },
+      {
+        $sort: { createdAt: -1 }
+      }
+    ]);
 
-    return files.filter(file => !(file.uploadedBy.toString() === loggedInUserId) && file.isPublic).map((file) => this.toFileInfo(file));
+    return files.map((file) => this.toFileInfo(file));
   }
 
   async incrementDownloadCount(fileId: string): Promise<void> {
@@ -207,8 +255,8 @@ export class StreamingService implements OnModuleInit {
     });
   }
 
-  private toFileInfo(file: FileDocument): FileInfo {
-    return {
+  private toFileInfo(file: FileDocument & { user?: any }): FileInfo {
+    const fileInfo: FileInfo = {
       id: file._id.toString(),
       filename: file.filename,
       originalName: file.originalName,
@@ -224,6 +272,16 @@ export class StreamingService implements OnModuleInit {
       createdAt: (file as any).createdAt,
       modifiedAt: (file as any).updatedAt,
     };
+
+    if (file.user) {
+      fileInfo.user = {
+        id: file.user.id?.toString() || '',
+        name: file.user.name || '',
+        email: file.user.email || '',
+      };
+    }
+
+    return fileInfo;
   }
 
   private generateETagFromFile(file: FileDocument): string {

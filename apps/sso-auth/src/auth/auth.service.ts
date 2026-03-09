@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
@@ -111,6 +111,53 @@ export class AuthService {
     await this.refreshTokenModel.deleteMany(
       { userId: new Types.ObjectId(userId) }
     );
+  }
+
+  async validateLocalUser(username: string, password: string): Promise<UserDocument | null> {
+    const user = await this.usersService.findByUsernameOrEmail(username);
+    if (!user) {
+      return null;
+    }
+
+    const isValid = await this.usersService.validatePassword(user, password);
+    if (!isValid) {
+      return null;
+    }
+
+    user.lastLoginAt = new Date();
+    await user.save();
+    return user;
+  }
+
+  async register(email: string, username: string, password: string) {
+    const user = await this.usersService.createLocalUser(email, username, password);
+    const tokens = await this.generateTokens(user);
+
+    return {
+      user: {
+        id: user._id.toString(),
+        email: user.email,
+        username: user.username,
+        picture: user.picture,
+        roles: user.roles,
+      },
+      ...tokens,
+    };
+  }
+
+  async loginLocal(user: UserDocument) {
+    const tokens = await this.generateTokens(user);
+
+    return {
+      user: {
+        id: user._id.toString(),
+        email: user.email,
+        username: user.username,
+        picture: user.picture,
+        roles: user.roles,
+      },
+      ...tokens,
+    };
   }
 
   private async generateTokens(user: UserDocument, userAgent?: string, ipAddress?: string) {

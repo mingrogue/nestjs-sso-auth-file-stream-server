@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  # SSO Auth Service
+  sso-auth:
+    build:
+      context: .
+      dockerfile: Dockerfile.sso-auth
+    container_name: sso-auth-service
+    ports:
+      - "3001:3001"
+    networks:
+      - backend-network
+    restart: unless-stopped
+
+  # Streaming Service
+  streaming:
+    build:
+      context: .
+      dockerfile: Dockerfile.streaming
+    container_name: streaming-service
+    ports:
+      - "3002:3002"
+    volumes:
+      - uploads-data:/app/uploads
+    depends_on:
+      - sso-auth
+    networks:
+      - backend-network
+    restart: unless-stopped
+
+  # Angular Client (Optional - uncomment if needed)
+  # client:
+  #   build:
+  #     context: ./client
+  #     dockerfile: Dockerfile
+  #   container_name: client-streaming
+  #   ports:
+  #     - "80:80"
+  #   depends_on:
+  #     - sso-auth
+  #     - streaming
+  #   networks:
+  #     - backend-network
+  #   restart: unless-stopped
+
+networks:
+  backend-network:
+    driver: bridge
+
+volumes:
+  mongodb-data:
+  uploads-data:

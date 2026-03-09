@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { LoginComponent } from './components/login/login.component';
+import { RegisterComponent } from './components/register/register.component';
 import { AuthCallbackComponent } from './components/auth-callback/auth-callback.component';
 import { FilesComponent } from './components/files/files.component';
 import { VideoPlayerComponent } from './components/video-player/video-player.component';
@@ -15,6 +16,7 @@ import { AuthInterceptor } from './interceptors/auth.interceptor';
   declarations: [
     AppComponent,
     LoginComponent,
+    RegisterComponent,
     AuthCallbackComponent,
     FilesComponent,
     VideoPlayerComponent

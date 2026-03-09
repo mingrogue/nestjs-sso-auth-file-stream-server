@@ -96,6 +96,7 @@
             <h3>{{ file.originalName }}</h3>
             <p class="file-size">{{ file.sizeFormatted }}</p>
             <p class="file-downloads" *ngIf="file.downloadCount > 0">{{ file.downloadCount }} views</p>
+            <p class="file-uploaded-by" *ngIf="file?.user">{{ file.user?.name }}</p>
             <div class="file-tags" *ngIf="file.tags && file.tags.length > 0">
               <span class="tag" *ngFor="let tag of file.tags">{{ tag }}</span>
             </div>

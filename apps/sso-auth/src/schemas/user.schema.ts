@@ -12,6 +12,9 @@ export class User {
   username: string;
 
   @Prop()
+  password?: string;
+
+  @Prop()
   firstName?: string;
 
   @Prop()
@@ -20,11 +23,11 @@ export class User {
   @Prop()
   picture?: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, default: 'local' })
   provider: string;
 
-  @Prop({ required: true })
-  providerId: string;
+  @Prop()
+  providerId?: string;
 
   @Prop({ type: [String], default: ['user'] })
   roles: string[];
@@ -35,4 +38,4 @@ export class User {
 
 export const UserSchema = SchemaFactory.createForClass(User);
 
-UserSchema.index({ provider: 1, providerId: 1 }, { unique: true });
+UserSchema.index({ provider: 1, providerId: 1 }, { unique: true, sparse: true });

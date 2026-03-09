@@ -1,5 +1,5 @@
 export const environment = {
-  production: false,
+  production: true,
   ssoAuthUrl: 'http://localhost:3001',
   streamingUrl: 'http://localhost:3002',
 };

@@ -1,4 +1,4 @@
-.login-container {
+.register-container {
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -7,7 +7,7 @@
   padding: 20px;
 }
 
-.login-card {
+.register-card {
   background: white;
   border-radius: 16px;
   padding: 40px;
@@ -29,7 +29,7 @@
   }
 }
 
-.login-form {
+.register-form {
   .form-group {
     margin-bottom: 16px;
 
@@ -54,6 +54,13 @@
   }
 }
 
+.password-hint {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
 .error-message {
   color: #e74c3c;
   font-size: 14px;
@@ -61,7 +68,7 @@
   text-align: center;
 }
 
-.login-btn {
+.register-btn {
   width: 100%;
   padding: 14px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -84,9 +91,9 @@
   }
 }
 
-.register-link {
+.login-link {
   text-align: center;
-  margin-top: 16px;
+  margin-top: 20px;
   color: #666;
   font-size: 14px;
 
@@ -98,59 +105,5 @@
     &:hover {
       text-decoration: underline;
     }
-  }
-}
-
-.divider {
-  display: flex;
-  align-items: center;
-  margin: 24px 0;
-
-  &::before,
-  &::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: #e1e5e9;
-  }
-
-  span {
-    padding: 0 16px;
-    color: #999;
-    font-size: 14px;
-  }
-}
-
-.oauth-buttons {
-  display: flex;
-  gap: 12px;
-
-  button {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 12px;
-    border: 2px solid #e1e5e9;
-    border-radius: 8px;
-    background: white;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-
-    &:hover {
-      background: #f8f9fa;
-      border-color: #d1d5d9;
-    }
-  }
-
-  .google-btn {
-    color: #333;
-  }
-
-  .github-btn {
-    color: #333;
   }
 }

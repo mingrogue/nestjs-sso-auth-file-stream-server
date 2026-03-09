@@ -1,0 +1,31 @@
+# Ignore node_modules
+node_modules
+**/node_modules
+
+# Ignore git
+.git
+.gitignore
+
+# Ignore IDE files
+.idea
+.vscode
+*.sublime-workspace
+
+# Ignore test files
+**/test
+**/*.spec.ts
+
+# Ignore client folder (separate build)
+client
+
+# Ignore uploads
+uploads
+
+# Ignore documentation
+*.md
+LICENSE
+
+# Ignore environment files
+.env
+.env.*
+!.env.example

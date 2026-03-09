@@ -1,6 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, ConflictException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import * as bcrypt from 'bcryptjs';
 import { User, UserDocument } from '../schemas/user.schema';
 
 export interface OAuthProfile {
@@ -84,5 +85,49 @@ export class UsersService {
 
   async updateLastLogin(userId: string): Promise<void> {
     await this.userModel.findByIdAndUpdate(userId, { lastLoginAt: new Date() }).exec();
+  }
+
+  async createLocalUser(email: string, username: string, password: string): Promise<UserDocument> {
+    const existingEmail = await this.findByEmail(email);
+    if (existingEmail) {
+      throw new ConflictException('Email already exists');
+    }
+
+    const existingUsername = await this.findByUsername(username);
+    if (existingUsername) {
+      throw new ConflictException('Username already exists');
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = new this.userModel({
+      email,
+      username,
+      password: hashedPassword,
+      provider: 'local',
+      roles: ['user'],
+      lastLoginAt: new Date(),
+    });
+
+    await newUser.save();
+    this.logger.log(`New local user created: ${newUser.email}`);
+    return newUser;
+  }
+
+  async findByUsername(username: string): Promise<UserDocument | null> {
+    return this.userModel.findOne({ username }).exec();
+  }
+
+  async findByUsernameOrEmail(identifier: string): Promise<UserDocument | null> {
+    return this.userModel.findOne({
+      $or: [{ username: identifier }, { email: identifier }],
+    }).exec();
+  }
+
+  async validatePassword(user: UserDocument, password: string): Promise<boolean> {
+    if (!user.password) {
+      return false;
+    }
+    return bcrypt.compare(password, user.password);
   }
 }

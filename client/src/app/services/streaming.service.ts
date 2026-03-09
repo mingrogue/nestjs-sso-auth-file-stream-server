@@ -4,6 +4,12 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { AuthService } from './auth.service';
 
+export interface FileUser {
+  id: string;
+  name: string;
+  email: string;
+}
+
 export interface FileInfo {
   id: string;
   filename: string;
@@ -16,6 +22,7 @@ export interface FileInfo {
   description?: string;
   tags: string[];
   uploadedBy: string;
+  user?: FileUser;
   downloadCount: number;
   createdAt: Date;
   modifiedAt: Date;

@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Body, UseGuards, Req, Res, Headers } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Req, Res, Headers, HttpCode, HttpStatus } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard, CurrentUser } from '@app/common';
 import type { IUser } from '@app/common';
 import type { Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
+import { RegisterDto, LoginDto } from './dto';
 
 @Controller('auth')
 export class AuthController {
@@ -70,6 +71,24 @@ export class AuthController {
     return { message: 'Logged out successfully' };
   }
 
+  // Local Register
+  @Post('register')
+  async register(@Body() registerDto: RegisterDto) {
+    return this.authService.register(
+      registerDto.email,
+      registerDto.username,
+      registerDto.password,
+    );
+  }
+
+  // Local Login
+  @Post('login')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard('local'))
+  async login(@Req() req: Request) {
+    return this.authService.loginLocal(req.user as any);
+  }
+
   // Available providers info
   @Get('providers')
   getProviders() {
@@ -77,6 +96,7 @@ export class AuthController {
       providers: [
         { name: 'google', url: '/auth/google' },
         { name: 'github', url: '/auth/github' },
+        { name: 'local', url: '/auth/login' },
       ],
     };
   }
