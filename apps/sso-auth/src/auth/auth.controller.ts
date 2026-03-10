@@ -84,9 +84,8 @@ export class AuthController {
   // Local Login
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(AuthGuard('local'))
   async login(@Req() req: Request) {
-    return this.authService.loginLocal(req.user as any);
+    return this.authService.loginLocal(req.body as any);
   }
 
   // Available providers info

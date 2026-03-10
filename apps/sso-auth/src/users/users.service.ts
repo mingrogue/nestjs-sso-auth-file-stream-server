@@ -128,6 +128,6 @@ export class UsersService {
     if (!user.password) {
       return false;
     }
-    return bcrypt.compare(password, user.password);
+    return await bcrypt.compare(user.password, password);
   }
 }

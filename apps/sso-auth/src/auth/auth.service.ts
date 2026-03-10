@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, BadGatewayException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
@@ -146,15 +146,25 @@ export class AuthService {
   }
 
   async loginLocal(user: UserDocument) {
-    const tokens = await this.generateTokens(user);
+    const fetchedUser = await this.usersService.findByUsernameOrEmail(user.username);
+    if (!fetchedUser) {
+      throw new BadGatewayException('User not found');
+    }
+
+    const isValid = await this.usersService.validatePassword(user, fetchedUser.password || '');
+    if (!isValid) {
+      throw new BadGatewayException('Invalid password');
+    }
+
+    const tokens = await this.generateTokens(fetchedUser);
 
     return {
       user: {
-        id: user._id.toString(),
-        email: user.email,
-        username: user.username,
-        picture: user.picture,
-        roles: user.roles,
+        id: fetchedUser._id.toString(),
+        email: fetchedUser.email,
+        username: fetchedUser.username,
+        picture: fetchedUser.picture,
+        roles: fetchedUser.roles,
       },
       ...tokens,
     };

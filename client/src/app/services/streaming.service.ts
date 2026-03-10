@@ -12,6 +12,7 @@ export interface FileUser {
 
 export interface FileInfo {
   id: string;
+  _id: string;
   filename: string;
   originalName: string;
   size: number;
@@ -80,11 +81,15 @@ export class StreamingService {
 
   getStreamUrl(fileId: string): string {
     const token = this.authService.token;
+    console.log(fileId);
+    
     return `${environment.streamingUrl}/stream/download/${fileId}?token=${token}`;
   }
 
   getStreamUrlByFilename(filename: string): string {
     const token = this.authService.token;
+    console.log(filename);
+    
     return `${environment.streamingUrl}/stream/${filename}?token=${token}`;
   }
 }

@@ -46,7 +46,6 @@ Thumbs.db
 
 */**/.env
 dist
-!client/dist
 */**/node_modules
 */**/.angular
 */**/.vscode

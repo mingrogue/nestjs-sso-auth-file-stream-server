@@ -201,51 +201,29 @@ export class StreamingService implements OnModuleInit {
   async listAllFiles(loggedInUserId: string): Promise<FileInfo[]> {
     const files = await this.fileModel.aggregate([
       {
-        $match: {
-          uploadedBy: { $ne: loggedInUserId },
-          isPublic: true
-        }
-      },
-      {
-        $addFields: {
-          uploadedByObjectId: { $toObjectId: '$uploadedBy' }
-        }
-      },
-      {
         $lookup: {
           from: 'users',
-          localField: 'uploadedByObjectId',
+          localField: 'uploadedBy',
           foreignField: '_id',
           as: 'uploader'
         }
       },
+      // {
+      //   $unwind: '$uploader'
+      // },
       {
-        $unwind: {
-          path: '$uploader',
-          preserveNullAndEmptyArrays: true
+        $match: {
+          uploadedBy: { $ne: loggedInUserId },
+          isPublic: true
         }
-      },
-      {
-        $addFields: {
-          user: {
-            id: '$uploader._id',
-            name: '$uploader.username',
-            email: '$uploader.email'
-          }
-        }
-      },
-      {
-        $project: {
-          uploader: 0,
-          uploadedByObjectId: 0
-        }
-      },
-      {
-        $sort: { createdAt: -1 }
       }
     ]);
+    // const files = await this.fileModel
+    //   .find()
+    //   .sort({ createdAt: -1 })
+    //   .exec();
 
-    return files.map((file) => this.toFileInfo(file));
+    return files;
   }
 
   async incrementDownloadCount(fileId: string): Promise<void> {

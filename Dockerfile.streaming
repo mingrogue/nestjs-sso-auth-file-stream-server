@@ -20,6 +20,7 @@ RUN npm ci --only=production
 COPY --from=builder /app/dist ./dist
 
 RUN mkdir -p /app/uploads
+COPY uploads/ /app/uploads/
 
 EXPOSE 3002
 

@@ -37,5 +37,3 @@ export class User {
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
-
-UserSchema.index({ provider: 1, providerId: 1 }, { unique: true, sparse: true });
