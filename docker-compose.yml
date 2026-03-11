@@ -1,18 +1,6 @@
 version: '3.8'
 
 services:
-  # MongoDB Database
-  mongodb:
-    image: mongo:latest
-    container_name: mongodb-sso-streaming
-    ports:
-      - "27018:27017"
-    volumes:
-      - mongodb-data:/data/db
-    networks:
-      - backend-network
-    restart: unless-stopped
-
   # SSO Auth Service
   sso-auth:
     build:
@@ -23,12 +11,8 @@ services:
       - "3001:3001"
     env_file:
       - .env
-    environment:
-      - MONGODB_URI=mongodb://mongodb:27017/sso-streaming
-    depends_on:
-      - mongodb
     networks:
-      - backend-network
+      - sso-streaming-network
     restart: unless-stopped
 
   # Streaming Service
@@ -41,21 +25,17 @@ services:
       - "3002:3002"
     env_file:
       - .env
-    environment:
-      - MONGODB_URI=mongodb://mongodb:27017/sso-streaming
     volumes:
       - uploads-data:/app/uploads
     depends_on:
-      - mongodb
       - sso-auth
     networks:
-      - backend-network
+      - sso-streaming-network
     restart: unless-stopped
 
 networks:
-  backend-network:
-    driver: bridge
+  sso-streaming-network:
+    external: true
 
 volumes:
-  mongodb-data:
   uploads-data:

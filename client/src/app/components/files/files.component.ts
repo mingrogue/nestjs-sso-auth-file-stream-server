@@ -145,7 +145,8 @@ export class FilesComponent implements OnInit {
   }
 
   playFile(file: FileInfo): void {
-    this.router.navigate(['/player', file._id]);
+    console.log(file, 'file');
+    this.router.navigate(['/player', file.id]);
   }
 
   getFileIcon(mimeType: string): string {
@@ -163,7 +164,7 @@ export class FilesComponent implements OnInit {
   getImageUrl(file: FileInfo): string {
     console.log(file);
     
-    return this.streamingService.getStreamUrl(file._id);
+    return this.streamingService.getStreamUrl(file.id);
   }
 
   logout(): void {

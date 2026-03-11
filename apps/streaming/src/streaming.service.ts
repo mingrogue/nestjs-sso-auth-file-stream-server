@@ -113,9 +113,7 @@ export class StreamingService implements OnModuleInit {
     @InjectModel(FileMetadata.name) private fileModel: Model<FileDocument>,
     private readonly configService: ConfigService,
   ) {
-    this.filesDirectory = resolve(
-      this.configService.get<string>('FILES_DIRECTORY', './uploads'),
-    );
+    this.filesDirectory = this.configService.get<string>('FILES_DIRECTORY', './uploads'),
     this.maxChunkSize = this.configService.get<number>(
       'MAX_CHUNK_SIZE',
       10 * 1024 * 1024, // 10MB default
@@ -201,29 +199,51 @@ export class StreamingService implements OnModuleInit {
   async listAllFiles(loggedInUserId: string): Promise<FileInfo[]> {
     const files = await this.fileModel.aggregate([
       {
-        $lookup: {
-          from: 'users',
-          localField: 'uploadedBy',
-          foreignField: '_id',
-          as: 'uploader'
-        }
-      },
-      // {
-      //   $unwind: '$uploader'
-      // },
-      {
         $match: {
           uploadedBy: { $ne: loggedInUserId },
           isPublic: true
         }
+      },
+      {
+        $addFields: {
+          uploadedByObjectId: { $toObjectId: '$uploadedBy' }
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'uploadedByObjectId',
+          foreignField: '_id',
+          as: 'uploader'
+        }
+      },
+      {
+        $unwind: {
+          path: '$uploader',
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      {
+        $addFields: {
+          user: {
+            id: '$uploader._id',
+            name: '$uploader.username',
+            email: '$uploader.email'
+          }
+        }
+      },
+      {
+        $project: {
+          uploader: 0,
+          uploadedByObjectId: 0
+        }
+      },
+      {
+        $sort: { createdAt: -1 }
       }
     ]);
-    // const files = await this.fileModel
-    //   .find()
-    //   .sort({ createdAt: -1 })
-    //   .exec();
 
-    return files;
+    return files.map((file) => this.toFileInfo(file));
   }
 
   async incrementDownloadCount(fileId: string): Promise<void> {
@@ -478,6 +498,8 @@ export class StreamingService implements OnModuleInit {
 
     await this.incrementDownloadCount(fileId);
 
+    console.log(file);
+    
     return this.streamFile(
       { filename: file.filename, ...options },
       res,
@@ -499,16 +521,7 @@ export class StreamingService implements OnModuleInit {
       throw new BadRequestException(`File type not allowed: ${ext}`);
     }
 
-    const filePath = join(this.filesDirectory, sanitized);
-    const resolvedPath = resolve(filePath);
-
-    // Ensure resolved path is within files directory
-    if (!resolvedPath.startsWith(this.filesDirectory)) {
-      this.logger.warn(`Blocked directory escape attempt: ${filename}`);
-      throw new BadRequestException('Invalid filename');
-    }
-
-    return resolvedPath;
+    return join(this.filesDirectory, sanitized);
   }
 
   private async getFileStats(filePath: string) {

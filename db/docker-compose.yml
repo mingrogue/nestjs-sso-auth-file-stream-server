@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb-sso-streaming
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongodb-data:/data/db
+    networks:
+      - sso-streaming-network
+    restart: unless-stopped
+
+networks:
+  sso-streaming-network:
+    name: sso-streaming-network
+    driver: bridge
+
+volumes:
+  mongodb-data:
