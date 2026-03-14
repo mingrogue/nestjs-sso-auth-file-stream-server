@@ -114,32 +114,33 @@ npm start
 
 ### Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| **SSO Auth Service** |
-| `SSO_AUTH_PORT` | Port for auth service | `3001` |
-| `JWT_SECRET` | Secret key for JWT signing | Required |
-| `JWT_EXPIRATION` | Token expiration in seconds | `3600` |
-| **OAuth Providers** |
-| `GOOGLE_CLIENT_ID` | Google OAuth Client ID | Required |
-| `GOOGLE_CLIENT_SECRET` | Google OAuth Client Secret | Required |
-| `GOOGLE_CALLBACK_URL` | Google OAuth callback URL | `http://localhost:3001/auth/google/callback` |
-| `GITHUB_CLIENT_ID` | GitHub OAuth Client ID | Required |
-| `GITHUB_CLIENT_SECRET` | GitHub OAuth Client Secret | Required |
-| `GITHUB_CALLBACK_URL` | GitHub OAuth callback URL | `http://localhost:3001/auth/github/callback` |
-| **Streaming Service** |
-| `STREAMING_PORT` | Port for streaming service | `3002` |
-| `FILES_DIRECTORY` | Directory for media files | `./uploads` |
-| `MAX_CHUNK_SIZE` | Max bytes per chunk | `10485760` (10MB) |
-| `THROTTLE_TTL` | Rate limit window (ms) | `60000` |
-| `THROTTLE_LIMIT` | Max requests per window | `100` |
-| **General** |
-| `FRONTEND_URL` | Frontend URL for redirects | `http://localhost:4200` |
-| `NODE_ENV` | Environment mode | `development` |
+| Variable               | Description                 | Default                                      |
+| ---------------------- | --------------------------- | -------------------------------------------- |
+| **SSO Auth Service**   |
+| `SSO_AUTH_PORT`        | Port for auth service       | `3001`                                       |
+| `JWT_SECRET`           | Secret key for JWT signing  | Required                                     |
+| `JWT_EXPIRATION`       | Token expiration in seconds | `3600`                                       |
+| **OAuth Providers**    |
+| `GOOGLE_CLIENT_ID`     | Google OAuth Client ID      | Required                                     |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth Client Secret  | Required                                     |
+| `GOOGLE_CALLBACK_URL`  | Google OAuth callback URL   | `http://localhost:3001/auth/google/callback` |
+| `GITHUB_CLIENT_ID`     | GitHub OAuth Client ID      | Required                                     |
+| `GITHUB_CLIENT_SECRET` | GitHub OAuth Client Secret  | Required                                     |
+| `GITHUB_CALLBACK_URL`  | GitHub OAuth callback URL   | `http://localhost:3001/auth/github/callback` |
+| **Streaming Service**  |
+| `STREAMING_PORT`       | Port for streaming service  | `3002`                                       |
+| `FILES_DIRECTORY`      | Directory for media files   | `./uploads`                                  |
+| `MAX_CHUNK_SIZE`       | Max bytes per chunk         | `10485760` (10MB)                            |
+| `THROTTLE_TTL`         | Rate limit window (ms)      | `60000`                                      |
+| `THROTTLE_LIMIT`       | Max requests per window     | `100`                                        |
+| **General**            |
+| `FRONTEND_URL`         | Frontend URL for redirects  | `http://localhost:4200`                      |
+| `NODE_ENV`             | Environment mode            | `development`                                |
 
 ### OAuth Setup
 
 #### Google OAuth
+
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
 2. Create a new project or select existing
 3. Navigate to **APIs & Services** → **Credentials**
@@ -149,6 +150,7 @@ npm start
 7. Copy Client ID and Client Secret to `.env`
 
 #### GitHub OAuth
+
 1. Go to [GitHub Developer Settings](https://github.com/settings/developers)
 2. Click **New OAuth App**
 3. Set Homepage URL: `http://localhost:4200`
@@ -159,33 +161,35 @@ npm start
 
 ### SSO Auth Service (Port 3001)
 
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| `GET` | `/auth/google` | No | Initiate Google OAuth flow |
-| `GET` | `/auth/google/callback` | No | Handle Google OAuth callback |
-| `GET` | `/auth/github` | No | Initiate GitHub OAuth flow |
-| `GET` | `/auth/github/callback` | No | Handle GitHub OAuth callback |
-| `GET` | `/auth/validate` | JWT | Validate current token |
-| `GET` | `/auth/profile` | JWT | Get user profile |
+| Method | Endpoint                | Auth | Description                  |
+| ------ | ----------------------- | ---- | ---------------------------- |
+| `GET`  | `/auth/google`          | No   | Initiate Google OAuth flow   |
+| `GET`  | `/auth/google/callback` | No   | Handle Google OAuth callback |
+| `GET`  | `/auth/github`          | No   | Initiate GitHub OAuth flow   |
+| `GET`  | `/auth/github/callback` | No   | Handle GitHub OAuth callback |
+| `GET`  | `/auth/validate`        | JWT  | Validate current token       |
+| `GET`  | `/auth/profile`         | JWT  | Get user profile             |
 
 ### Streaming Service (Port 3002)
 
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| `GET` | `/stream/health` | JWT | Health check endpoint |
-| `GET` | `/stream/files` | JWT | List all available files |
-| `GET` | `/stream/info/:filename` | JWT | Get file metadata |
-| `GET` | `/stream/:filename` | JWT | Stream file content |
+| Method | Endpoint                 | Auth | Description              |
+| ------ | ------------------------ | ---- | ------------------------ |
+| `GET`  | `/stream/health`         | JWT  | Health check endpoint    |
+| `GET`  | `/stream/files`          | JWT  | List all available files |
+| `GET`  | `/stream/info/:filename` | JWT  | Get file metadata        |
+| `GET`  | `/stream/:filename`      | JWT  | Stream file content      |
 
 #### Streaming Headers
 
 **Request Headers:**
+
 - `Authorization: Bearer <token>` - Required JWT token
 - `Range: bytes=0-1023` - Optional range for partial content
 - `If-None-Match: "<etag>"` - For cache validation
 - `If-Modified-Since: <date>` - For cache validation
 
 **Response Headers:**
+
 - `Content-Type` - MIME type of the file
 - `Content-Length` - Size in bytes
 - `Accept-Ranges: bytes` - Indicates range support
@@ -241,14 +245,14 @@ npm start
 
 ### Supported File Types
 
-| Category | Extensions | MIME Types |
-|----------|------------|------------|
-| **Video** | mp4, webm, ogg, avi, mov, mkv, m4v, 3gp | video/* |
-| **Audio** | mp3, wav, flac, aac, m4a, opus | audio/* |
-| **Images** | jpg, png, gif, webp, svg, bmp | image/* |
-| **Documents** | pdf, doc, docx, xls, xlsx, ppt, pptx | application/* |
-| **Text** | txt, html, css, js, json, xml, csv, md | text/* |
-| **Archives** | zip, rar, 7z, tar, gz | application/* |
+| Category      | Extensions                              | MIME Types     |
+| ------------- | --------------------------------------- | -------------- |
+| **Video**     | mp4, webm, ogg, avi, mov, mkv, m4v, 3gp | video/\*       |
+| **Audio**     | mp3, wav, flac, aac, m4a, opus          | audio/\*       |
+| **Images**    | jpg, png, gif, webp, svg, bmp           | image/\*       |
+| **Documents** | pdf, doc, docx, xls, xlsx, ppt, pptx    | application/\* |
+| **Text**      | txt, html, css, js, json, xml, csv, md  | text/\*        |
+| **Archives**  | zip, rar, 7z, tar, gz                   | application/\* |
 
 ### Range Requests (Seeking)
 
@@ -318,23 +322,27 @@ cp ~/Music/sample.mp3 ./uploads/
 ### Common Issues
 
 **Port already in use:**
+
 ```bash
 lsof -i :3001  # Find process using port
 kill -9 <PID>  # Kill the process
 ```
 
 **OAuth redirect mismatch:**
+
 - Ensure callback URLs in `.env` match exactly what's configured in OAuth provider
 - Check for trailing slashes
 
 **CORS errors:**
+
 - Verify `FRONTEND_URL` in `.env` matches your client URL
 - Check browser console for specific CORS error details
 
 **Token validation fails:**
+
 - Ensure `JWT_SECRET` is identical across all services
 - Check token hasn't expired
 
 ## 📄 License
 
-MIT License
+Free Liscense
